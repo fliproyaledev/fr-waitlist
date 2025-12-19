@@ -26,8 +26,7 @@ const buildIntentUrl = (taskId: string, referralLink: string, origin: string) =>
     }
 
     if (taskId === 'intent-tweet') {
-        const imageUrl = origin ? `${origin}/images/hero-character.jpg` : '';
-        const text = `I just joined Flip Royale on Virtual Protocol. @fliproyale Join the waitlist with my link: ${referralLink} ${imageUrl}`.trim();
+        const text = `I just joined Flip Royale on Virtual Protocol. @fliproyale Join the waitlist with my link: ${referralLink}`;
         return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
     }
 
@@ -48,7 +47,6 @@ export default function TasksPanel({ stats, onClaimed }: TasksPanelProps) {
     const [openedTasks, setOpenedTasks] = useState<Record<string, boolean>>({});
     const [error, setError] = useState<string | null>(null);
 
-    const origin = typeof window === 'undefined' ? '' : window.location.origin;
     const referralLink = useMemo(() => {
         if (typeof window === 'undefined') {
             return '';
@@ -95,7 +93,7 @@ export default function TasksPanel({ stats, onClaimed }: TasksPanelProps) {
             <div className={styles.taskList}>
                 {TASKS.map((task) => {
                     const claimed = Boolean(stats.task_claims?.[task.id]);
-                    const intentUrl = buildIntentUrl(task.id, referralLink, origin);
+                    const intentUrl = buildIntentUrl(task.id, referralLink, '');
                     const canClaim = openedTasks[task.id] || claimed;
 
                     return (
