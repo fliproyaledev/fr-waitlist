@@ -32,10 +32,11 @@ export default function Home() {
             <Image
               src="/images/virtual-protocol-token.svg"
               alt="Virtual Protocol"
-              width={36}
-              height={36}
+              width={28}
+              height={28}
               className={styles.badgeLogo}
             />
+            <span className={styles.badgeText}>Built on Virtual Protocol</span>
           </div>
 
           {/* Features - Compact */}
