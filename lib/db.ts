@@ -1,3 +1,4 @@
+import 'server-only';
 import type { Redis } from '@upstash/redis';
 import { WaitlistEntry } from './types';
 

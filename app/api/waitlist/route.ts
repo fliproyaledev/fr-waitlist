@@ -3,6 +3,8 @@ import { insertWaitlistEntry } from '@/lib/db';
 import { validateTwitterUsername, validateWalletAddress } from '@/lib/validation';
 import { ApiResponse } from '@/lib/types';
 
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
     try {
         // Parse request body
