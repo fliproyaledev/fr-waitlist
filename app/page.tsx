@@ -1,5 +1,6 @@
 import styles from './page.module.css';
-import WaitlistForm from '@/components/WaitlistForm';
+import { Suspense } from 'react';
+import WaitlistExperience from '@/components/WaitlistExperience';
 import Image from 'next/image';
 
 export default function Home() {
@@ -28,8 +29,7 @@ export default function Home() {
           </p>
 
           <div className={styles.badge}>
-            <span className={styles.badgeIcon}>⚡</span>
-            Built on Virtual Protocol
+            <span className={styles.badgeText}>Built on Virtual Protocol</span>
           </div>
 
           {/* Features - Compact */}
@@ -58,7 +58,9 @@ export default function Home() {
 
         {/* Right Side - Waitlist Form */}
         <div className={styles.rightSection}>
-          <WaitlistForm />
+          <Suspense fallback={<div className={styles.subtitle}>Loading...</div>}>
+            <WaitlistExperience />
+          </Suspense>
         </div>
       </div>
 

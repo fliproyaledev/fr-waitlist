@@ -1,38 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { claimTaskBySession } from '@/lib/db';
-import { ApiResponse } from '@/lib/types';
+import { buildStats, claimTask, getUserBySession } from '@/lib/db';
+
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
     try {
-        const token = request.headers.get('x-session-token') || '';
         const body = await request.json().catch(() => ({}));
-        const { task_id } = body || {};
+        const { taskId } = body || {};
+        const token = request.cookies.get('waitlist_session')?.value;
+        const user = await getUserBySession(token || '');
 
-        if (!token) {
-            return NextResponse.json<ApiResponse>(
-                { success: false, message: 'Missing session token.' },
-                { status: 401 }
-            );
+        if (!user) {
+            return NextResponse.json({ ok: false, error: 'Invalid or expired session.' }, { status: 401 });
         }
 
-        if (!task_id) {
-            return NextResponse.json<ApiResponse>(
-                { success: false, message: 'Missing task_id.' },
-                { status: 400 }
-            );
+        if (!taskId) {
+            return NextResponse.json({ ok: false, error: 'Missing taskId.' }, { status: 400 });
         }
 
-        const stats = await claimTaskBySession(token, String(task_id));
-        return NextResponse.json<ApiResponse>(
-            { success: true, message: 'Task recorded.', data: { stats } },
-            { status: 200 }
-        );
+        const updatedUser = await claimTask(user, String(taskId));
+        return NextResponse.json({ ok: true, data: buildStats(updatedUser) }, { status: 200 });
     } catch (error: unknown) {
         const msg = error instanceof Error ? error.message : 'An unexpected error occurred.';
         const status = msg.includes('session') ? 401 : 400;
-        return NextResponse.json<ApiResponse>(
-            { success: false, message: msg },
-            { status }
-        );
+        return NextResponse.json({ ok: false, error: msg }, { status });
     }
 }

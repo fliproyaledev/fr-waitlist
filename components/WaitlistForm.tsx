@@ -4,7 +4,12 @@ import { useState } from 'react';
 import { validateTwitterUsername, validateWalletAddress } from '@/lib/validation';
 import styles from './WaitlistForm.module.css';
 
-export default function WaitlistForm() {
+type WaitlistFormProps = {
+    referredBy?: string | null;
+    onSuccess: () => void;
+};
+
+export default function WaitlistForm({ referredBy, onSuccess }: WaitlistFormProps) {
     const [twitterUsername, setTwitterUsername] = useState('');
     const [walletAddress, setWalletAddress] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,21 +69,21 @@ export default function WaitlistForm() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    twitter_username: twitterUsername,
-                    wallet_address: walletAddress,
+                    twitter: twitterUsername,
+                    wallet: walletAddress,
+                    referredBy,
                 }),
             });
 
             const data = await response.json();
 
-            if (data.success) {
-                setMessage({ type: 'success', text: data.message });
-                setTwitterUsername('');
-                setWalletAddress('');
+            if (data.ok) {
+                setMessage({ type: 'success', text: "You're in. Boost your odds with extra entries." });
                 setTwitterError('');
                 setWalletError('');
+                onSuccess();
             } else {
-                setMessage({ type: 'error', text: data.message });
+                setMessage({ type: 'error', text: data.error || 'Unable to join right now.' });
             }
         } catch (error) {
             setMessage({
