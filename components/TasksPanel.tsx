@@ -5,6 +5,8 @@ import { TASKS } from '@/lib/tasks';
 import styles from './WaitlistExperience.module.css';
 
 type WaitlistStats = {
+    wallet: string;
+    twitter: string;
     referral_code: string;
     task_claims: Record<string, string>;
     task_bonus_entries: number;

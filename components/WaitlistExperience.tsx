@@ -99,7 +99,7 @@ export default function WaitlistExperience() {
                 </div>
             </div>
 
-            <TasksPanel stats={stats} onClaimed={setStats} />
+            <TasksPanel stats={stats} onClaimed={(nextStats) => setStats(nextStats)} />
             <ReferralPanel referralCode={stats.referral_code} stats={stats} />
         </div>
     );
