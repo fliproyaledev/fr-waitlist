@@ -1,5 +1,5 @@
 import styles from './page.module.css';
-import WaitlistForm from '@/components/WaitlistForm';
+import WaitlistExperience from '@/components/WaitlistExperience';
 import Image from 'next/image';
 
 export default function Home() {
@@ -58,7 +58,7 @@ export default function Home() {
 
         {/* Right Side - Waitlist Form */}
         <div className={styles.rightSection}>
-          <WaitlistForm />
+          <WaitlistExperience />
         </div>
       </div>
 
