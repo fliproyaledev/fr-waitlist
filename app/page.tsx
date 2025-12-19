@@ -29,8 +29,13 @@ export default function Home() {
           </p>
 
           <div className={styles.badge}>
-            <span className={styles.badgeIcon}>⚡</span>
-            Built on Virtual Protocol
+            <Image
+              src="/images/virtual-protocol-token.svg"
+              alt="Virtual Protocol"
+              width={36}
+              height={36}
+              className={styles.badgeLogo}
+            />
           </div>
 
           {/* Features - Compact */}
