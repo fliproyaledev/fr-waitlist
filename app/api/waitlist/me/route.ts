@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUsernameBySession, getWaitlistStats } from '@/lib/db';
 import { ApiResponse } from '@/lib/types';
 
+export const runtime = 'nodejs';
+
 export async function GET(request: NextRequest) {
     try {
         const token = request.headers.get('x-session-token') || '';

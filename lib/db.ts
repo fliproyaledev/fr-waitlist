@@ -155,3 +155,82 @@ export async function checkWalletExists(address: string): Promise<boolean> {
         return false;
     }
 }
+
+type WaitlistStats = {
+    totalEntries: number;
+    userRank: number | null;
+    tasksCompleted: number;
+};
+
+const getSessionKey = (token: string) => `waitlist:session:${token}`;
+const getTasksKey = (username: string) => `waitlist:tasks:${username}`;
+
+export async function getUsernameBySession(token: string): Promise<string | null> {
+    if (!token) {
+        return null;
+    }
+
+    try {
+        const redis = await getRedisClient();
+        const data = await redis.get(getSessionKey(token));
+        if (!data) {
+            return null;
+        }
+
+        if (typeof data === 'string') {
+            try {
+                const parsed = JSON.parse(data) as { username?: string };
+                return parsed.username ?? data;
+            } catch {
+                return data;
+            }
+        }
+
+        if (typeof data === 'object' && data !== null && 'username' in data) {
+            return String((data as { username: string }).username);
+        }
+
+        return null;
+    } catch (error) {
+        console.error('Error getting username by session:', error);
+        return null;
+    }
+}
+
+export async function getWaitlistStats(username: string): Promise<WaitlistStats> {
+    try {
+        const redis = await getRedisClient();
+        const [totalEntries, usernames, tasksCompleted] = await Promise.all([
+            redis.scard('waitlist:all'),
+            redis.smembers('waitlist:all'),
+            redis.scard(getTasksKey(username)),
+        ]);
+
+        const sorted = [...(usernames || [])].sort();
+        const rankIndex = sorted.indexOf(username);
+
+        return {
+            totalEntries: totalEntries || 0,
+            userRank: rankIndex === -1 ? null : rankIndex + 1,
+            tasksCompleted: tasksCompleted || 0,
+        };
+    } catch (error) {
+        console.error('Error getting waitlist stats:', error);
+        return { totalEntries: 0, userRank: null, tasksCompleted: 0 };
+    }
+}
+
+export async function claimTaskBySession(token: string, taskId: string): Promise<WaitlistStats> {
+    const username = await getUsernameBySession(token);
+    if (!username) {
+        throw new Error('Invalid or expired session.');
+    }
+
+    if (!taskId) {
+        throw new Error('Missing task_id.');
+    }
+
+    const redis = await getRedisClient();
+    await redis.sadd(getTasksKey(username), taskId);
+    return getWaitlistStats(username);
+}
