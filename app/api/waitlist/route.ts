@@ -22,7 +22,20 @@ export async function POST(request: NextRequest) {
         const normalizedTwitter = normalizeTwitter(twitterValidation.cleaned);
         const normalizedWallet = normalizeWallet(walletValidation.cleaned);
 
-        const { user } = await upsertUser(normalizedWallet, normalizedTwitter);
+        let userResult;
+        try {
+            userResult = await upsertUser(normalizedWallet, normalizedTwitter);
+        } catch (error) {
+            if (error instanceof Error && error.message.includes('linked to different users')) {
+                return NextResponse.json(
+                    { ok: false, error: 'Wallet and X handle do not match our records.' },
+                    { status: 409 }
+                );
+            }
+            throw error;
+        }
+
+        const { user } = userResult;
         await applyReferral({ user, referredBy: referredBy ? String(referredBy) : undefined });
 
         const sessionToken = await createSession(user.id);

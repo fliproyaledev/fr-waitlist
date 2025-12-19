@@ -120,6 +120,9 @@ export const upsertUser = async (wallet: string, twitter: string) => {
     const redis = await getRedisClient();
     const walletId = await redis.get(walletKey(wallet));
     const twitterId = await redis.get(twitterKey(twitter));
+    if (walletId && twitterId && walletId !== twitterId) {
+        throw new Error('Wallet and Twitter are already linked to different users.');
+    }
     const userId = (walletId || twitterId) as string | undefined;
 
     if (userId) {
