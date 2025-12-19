@@ -1,13 +1,14 @@
-import { Redis } from '@upstash/redis';
+import type { Redis } from '@upstash/redis';
 import { WaitlistEntry } from './types';
 
 let redisClient: Redis | null = null;
 
-const getRedisClient = () => {
+const getRedisClient = async () => {
     if (redisClient) {
         return redisClient;
     }
 
+    const { Redis } = await import('@upstash/redis');
     const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
     const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 
@@ -33,7 +34,7 @@ export async function insertWaitlistEntry(
     walletAddress: string
 ): Promise<WaitlistEntry> {
     try {
-        const redis = getRedisClient();
+        const redis = await getRedisClient();
 
         // Check if Twitter username already exists
         const existingTwitter = await redis.get(`waitlist:twitter:${twitterUsername}`);
@@ -87,7 +88,7 @@ export async function insertWaitlistEntry(
  */
 export async function getWaitlistCount(): Promise<number> {
     try {
-        const redis = getRedisClient();
+        const redis = await getRedisClient();
         const count = await redis.scard('waitlist:all');
         return count || 0;
     } catch (error) {
@@ -102,7 +103,7 @@ export async function getWaitlistCount(): Promise<number> {
  */
 export async function getAllWaitlistEntries(): Promise<WaitlistEntry[]> {
     try {
-        const redis = getRedisClient();
+        const redis = await getRedisClient();
         // Get all usernames from the set
         const usernames = await redis.smembers('waitlist:all');
 
@@ -131,7 +132,7 @@ export async function getAllWaitlistEntries(): Promise<WaitlistEntry[]> {
  */
 export async function checkTwitterExists(username: string): Promise<boolean> {
     try {
-        const redis = getRedisClient();
+        const redis = await getRedisClient();
         const exists = await redis.exists(`waitlist:twitter:${username}`);
         return exists === 1;
     } catch (error) {
@@ -145,7 +146,7 @@ export async function checkTwitterExists(username: string): Promise<boolean> {
  */
 export async function checkWalletExists(address: string): Promise<boolean> {
     try {
-        const redis = getRedisClient();
+        const redis = await getRedisClient();
         const exists = await redis.exists(`waitlist:wallet:${address}`);
         return exists === 1;
     } catch (error) {
