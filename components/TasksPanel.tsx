@@ -20,13 +20,14 @@ type TasksPanelProps = {
     onClaimed: (stats: WaitlistStats) => void;
 };
 
-const buildIntentUrl = (taskId: string, referralLink: string) => {
+const buildIntentUrl = (taskId: string, referralLink: string, origin: string) => {
     if (taskId === 'follow') {
         return 'https://twitter.com/intent/follow?screen_name=fliproyale';
     }
 
     if (taskId === 'intent-tweet') {
-        const text = `I just joined Flip Royale on Virtual Protocol. Join the waitlist with my link: ${referralLink}`;
+        const imageUrl = origin ? `${origin}/images/hero-character.jpg` : '';
+        const text = `I just joined Flip Royale on Virtual Protocol. @fliproyale Join the waitlist with my link: ${referralLink} ${imageUrl}`.trim();
         return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
     }
 
@@ -44,14 +45,20 @@ const buildIntentUrl = (taskId: string, referralLink: string) => {
 
 export default function TasksPanel({ stats, onClaimed }: TasksPanelProps) {
     const [claimingId, setClaimingId] = useState<string | null>(null);
+    const [openedTasks, setOpenedTasks] = useState<Record<string, boolean>>({});
     const [error, setError] = useState<string | null>(null);
 
+    const origin = typeof window === 'undefined' ? '' : window.location.origin;
     const referralLink = useMemo(() => {
         if (typeof window === 'undefined') {
             return '';
         }
         return `${window.location.origin}/?ref=${stats.referral_code}`;
     }, [stats.referral_code]);
+
+    const handleOpen = (taskId: string) => {
+        setOpenedTasks((prev) => ({ ...prev, [taskId]: true }));
+    };
 
     const handleClaim = async (taskId: string) => {
         setError(null);
@@ -88,7 +95,8 @@ export default function TasksPanel({ stats, onClaimed }: TasksPanelProps) {
             <div className={styles.taskList}>
                 {TASKS.map((task) => {
                     const claimed = Boolean(stats.task_claims?.[task.id]);
-                    const intentUrl = buildIntentUrl(task.id, referralLink);
+                    const intentUrl = buildIntentUrl(task.id, referralLink, origin);
+                    const canClaim = openedTasks[task.id] || claimed;
 
                     return (
                         <div key={task.id} className={styles.taskCard}>
@@ -102,6 +110,7 @@ export default function TasksPanel({ stats, onClaimed }: TasksPanelProps) {
                                     target="_blank"
                                     rel="noreferrer"
                                     className={styles.secondaryButton}
+                                    onClick={() => handleOpen(task.id)}
                                 >
                                     Open on X
                                 </a>
@@ -109,7 +118,7 @@ export default function TasksPanel({ stats, onClaimed }: TasksPanelProps) {
                                     type="button"
                                     className={styles.primaryButton}
                                     onClick={() => handleClaim(task.id)}
-                                    disabled={claimed || claimingId === task.id}
+                                    disabled={claimed || claimingId === task.id || !canClaim}
                                 >
                                     {claimed ? 'Claimed' : claimingId === task.id ? 'Claiming...' : 'Claim'}
                                 </button>
