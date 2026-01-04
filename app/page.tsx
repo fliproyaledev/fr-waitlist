@@ -38,7 +38,7 @@ export default function Home() {
         {/* Social Links */}
         <div className={styles.socialLinks}>
           <a
-            href="https://twitter.com/FlipRoyaleGame"
+            href="https://x.com/fliproyale"
             target="_blank"
             rel="noopener noreferrer"
             className={styles.socialLink}
